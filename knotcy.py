@@ -18,10 +18,11 @@ slash = '=' * 20 + '<>' + '=' * 20
 def clear_all():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def start_bunner():
+def start_bunner(info=""):
     clear_all()
     print(f'{slash}\n{rise}\n{slash}')
-
+    if info:
+        print(info)
 
 
 def proverka_un_name(tab_nam): 
@@ -137,48 +138,52 @@ def redact_view_folder():
                     start_bunner()
                     view_task_folder()
                     redact_action = input('Select a folder for redact he name.\n-> ') 
-                    try:
+                
+                    if redact_action in ['!q', '!quit', '!ex', '!exit']:
+                            break
+                    if proverka_un_name(redact_action):
+                        # while True:
+                        start_bunner()
+                        print(f'you redacted -> {redact_action}')
 
-                        if proverka_un_name(redact_action):
-                            while True:
-                                start_bunner()
-                                print(f'you redacted -> {redact_action}')
 
-
-                                new_name_redacted = input('''Select a new name a table or, 
-        !q for exit:
-        -> ''')
-                                if new_name_redacted in ['!q', '!quit', '!ex', '!exit']:
-                                    break
-                                else:
-                                    if new_name_redacted:
-
-                                        # замена на шифр чтоб не было повторений с другими именами при проверке копийw
-                                        new_named_for_mask = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range (random.randint(20, 30)))
-                                        cur.execute(f"ALTER TABLE {redact_action} RENAME TO {new_named_for_mask}")  
-                                        connnn.commit()
-                                        # -
-                                        clean_name = ''.join(e for e in new_name_redacted if e.isalnum() or e == '_')
-                                        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (clean_name,))
-                                        if cur.fetchone():        
-                                            input(f'A folder with that name - {clean_name}, already exists\nPress any buuton to back menu...')
-                                        else:    
-                                            if not clean_name:
-                                                input('Error: name is empty.\nPress any buuton to back menu...')
-                                                return
-                                            # крч здесь доделать логику имя принимает маску но если такое имя существует то маска остается навсеглдда 
-                                            else:
-                                                cur.execute(f"ALTER TABLE {redact_action} RENAME TO {new_named_for_mask}")
-                                                connnn.commit()
-                                                input('Name changed successfully\nPress any buton to back...')
-                                                return
-                                            
-                        
+                        new_name_redacted = input('''Select a new name a table or, 
+!q for exit:
+-> ''')
+                        if new_name_redacted in ['!q', '!quit', '!ex', '!exit']:
+                            break
                         else:
-                            input(f'Name - {clean_name} not found\nPlease Press any button to back...')
+                            if new_name_redacted:
 
-                    except sqlite3.error as s:
-                        input(f'unknown command: {s}\nPress any button for back...')
+                                # замена на шифр чтоб не было повторений с другими именами при проверке копийw
+                                # new_named_for_mask = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range (random.randint(20, 30)))
+                                # cur.execute(f"ALTER TABLE {redact_action} RENAME TO {new_named_for_mask}")  
+                                # connnn.commit()
+                                # -
+                                
+                                clean_name = ''.join(e for e in new_name_redacted if e.isalnum() or e == '_')
+                                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (clean_name,))
+                                if cur.fetchone():        
+                                    input(f'A folder with that name - {clean_name}, already exists\nPress any button to back menu...')
+                                else:    
+                                    if not clean_name:
+                                        input('Error: name is empty.\nPress any button to back menu...')
+                                        
+                                    # крч здесь доделать логику имя принимает маску но если такое имя существует то маска остается навсеглдда 
+                                    else:
+                                        # one_name = redact_action.replace('"', '""')
+                                        # two_name = clean_name.replace('"', '""')
+                                        cur.execute(f'ALTER TABLE "{redact_action}" RENAME TO "{clean_name}"')
+                                        connnn.commit()
+                                        input('Name changed successfully\nPress any button to back...')
+                            else: 
+                                input('Error: You entered nothing.\nPress any button to back...')
+                                    
+                
+                    else:
+                        input(f'Name - {redact_action} not found\nPlease Press any button to back...')
+
+                
             except sqlite3.error as s:
                 input(f'unknown command: {s}\nPress any button for back...')
                             
@@ -225,8 +230,10 @@ def start_menu():
         start_bunner()
 
         now = datetime.now()
-        x = "-" * 9
-        print(f"{x}{now.strftime('%H.%M')}{x}{now.strftime('%d.%m.%Y')}{x}")
+        x = "-" * 16
+        
+        
+        print(f"{x}{now.strftime('%d.%m.%Y')}{x}")
 
         user_q = input('''Welcome, select action:
 1 - add a new task folder.
@@ -241,15 +248,32 @@ exit or quit - for exit
             
             # input('press any button...')
         elif user_q.lower().strip() in ['2', 'two', 'view']: # доделать!
+            help_h = ""
             while True:
                 start_bunner()
-                
                 view_task_folder()
-                user_action_two = input('please select an action or (--help, quit):\n->  ') 
-                if user_action_two.lower().strip() in ['quit', 'q', 'ex', 'exit']:
+                if help_h:
+                    print(help_h)
+                    help_h = ""
+                user_action_two = input('please select an action or (--help, !quit, !redact):\n->  ') 
+
+
+                if user_action_two.lower().strip() in ['!quit', '!q', '!ex', '!exit']:
                     print('retutn to main menu...')
                     time.sleep(1)
                     break
+                elif user_action_two.lower().strip() in ['--help', '-help', '--h', '-h']:
+                    help_h = f'''{'='*42}
+--all command:
+!r , !redact - for redacted name your folder.
+!q, !quit, !ex, !exit - for exit.\n{'='*42}'''
+                    continue                
+                                   
+                elif user_action_two.lower().strip() in ['!r', '!redact']:
+                    redact_view_folder()
+                else:
+                    help_h = f'{'='*42}\nCommand not found, pls return your request.\n{'='*42}'
+
 
 
         elif user_q.lower().strip() in ['exit', 'ex', 'quit', 'q']:
