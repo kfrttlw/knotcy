@@ -30,7 +30,7 @@ def proverka_un_name(tab_nam):
     return cur.fetchone() is not None
 #---------forcomfy------------------------------2
 # ---------------------------------ХЗдесь все с sql 1 пункт------------------------------------1
-connnn = sqlite3.connect('base.sqlite')
+connnn = sqlite3.connect('knotcy_base.sqlite')
 cur = connnn.cursor()
 
 # для создания папки задач
@@ -95,49 +95,34 @@ def view_task_folder(): # показ всех таблиц
 # ---------------------------------------------------------------------------------------------2
 # ---------------------------------ХЗдесь все c sql 2.2 пункт------------------------------------1
 def redact_view_folder():
+    help_help = ""
     while True:
         start_bunner()
         view_task_folder()
+        if help_help:
+            print(help_help)
+            help_help = ""
 
-        action_folder = input('''Please select an numer or name a folder, or:
-!r - redact name a folder.
-!d - delete a folder.
-!q - for back menu.
--> ''')
+        action_folder = input('Please select an numer or name a folder, or (--help):\n->')   # крч здесь над сделать чтоб о принимал цифры и имена
         
         if action_folder.strip() in ['!q', '!quit', '!ex', '!exit']:
             print('retunr to menu...')
             time.sleep(1)
             break
-        elif action_folder.strip() in ['!d', '!del', '!delete']:
-            while True:
-                start_bunner()
-                # view_task_folder()
-                tables = view_task_folder()
-
-                name_del = input('pls enter a task folder for del, q to cancel.\n-> ')
-                if name_del in ['!q', '!quit', '!ex', '!exit']:
-                    print('back to menu...')
-                    time.sleep(1)
-                    break 
-                if name_del.isdigit():
-                    indx = int(name_del) - 1
-                    if 0 <= indx < len(tables):
-                        name_del = tables[indx]
-                    else:
-                        input('unknown command, press any button for back...')
-                        continue
-                if name_del:
-                    del_task_folder_full(name_del)
-                else:
-                    input('unknown command, press any button for back...')
+#         elif action_folder.strip() in ['--h', '--help', '-h', '-help']:
+#             help_help = f'''{'='*42}
+# !r, !re, !ren, !rename -> redact name a folder.
+# !d, !del, !delete -> delete a folder.
+# !q, !quit, !ex, !exit -> for back menu.\n{'='*42}'''
+#             continue
         
-        elif action_folder.strip() in ['!r', '!re', '!ren', '!rename']:
+        
+        elif action_folder.strip():
             try:
                 while True:
                     start_bunner()
                     view_task_folder()
-                    redact_action = input('Select a folder for redact he name.\n-> ') 
+                    redact_action = input('Select a folder for redact he name.\n-> ')  # крч здесь над сделать чтоб о принимал цифры и имена и тут как то их скрестить
                 
                     if redact_action in ['!q', '!quit', '!ex', '!exit']:
                             break
@@ -153,14 +138,7 @@ def redact_view_folder():
                         if new_name_redacted in ['!q', '!quit', '!ex', '!exit']:
                             break
                         else:
-                            if new_name_redacted:
-
-                                # замена на шифр чтоб не было повторений с другими именами при проверке копийw
-                                # new_named_for_mask = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range (random.randint(20, 30)))
-                                # cur.execute(f"ALTER TABLE {redact_action} RENAME TO {new_named_for_mask}")  
-                                # connnn.commit()
-                                # -
-                                
+                            if new_name_redacted:                                
                                 clean_name = ''.join(e for e in new_name_redacted if e.isalnum() or e == '_')
                                 cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (clean_name,))
                                 if cur.fetchone():        
@@ -187,8 +165,8 @@ def redact_view_folder():
             except sqlite3.error as s:
                 input(f'unknown command: {s}\nPress any button for back...')
                             
-        else:
-            input('Command not found, pls return your request.\nPress any button to back...')
+        
+        help_help = f'{'='*42}\nCommand not found, please return your request.\n{'='*42}'
 
 
 # ---------------------------------------------------------------------------------------------2
@@ -255,22 +233,48 @@ exit or quit - for exit
                 if help_h:
                     print(help_h)
                     help_h = ""
-                user_action_two = input('please select an action or (--help, !quit, !redact):\n->  ') 
+                user_action_two = input('please select an action or (--help):\n->  ') 
 
 
                 if user_action_two.lower().strip() in ['!quit', '!q', '!ex', '!exit']:
                     print('retutn to main menu...')
-                    time.sleep(1)
+                    time.sleep(0.4)
                     break
                 elif user_action_two.lower().strip() in ['--help', '-help', '--h', '-h']:
                     help_h = f'''{'='*42}
 --all command:
-!r , !redact - for redacted name your folder.
-!q, !quit, !ex, !exit - for exit.\n{'='*42}'''
+!r, !re, !ren, !rename -> redact name a folder.
+!d, !del, !delete -> delete a folder.
+!q, !quit, !ex, !exit -> for back menu.\n{'='*42}'''
                     continue                
                                    
-                elif user_action_two.lower().strip() in ['!r', '!redact']:
+                elif user_action_two.lower().strip() in ['!r', '!re' '!redact']:
                     redact_view_folder()
+
+                elif user_action_two.lower().strip() in ['!d', '!del', '!delete']:
+                    while True:
+                        start_bunner()
+                        # view_task_folder()
+                        tables = view_task_folder()
+
+                        name_del = input('pls enter a task folder for del, q to cancel.\n-> ')
+                        if name_del in ['!q', '!quit', '!ex', '!exit']:
+                            print('back to menu...')
+                            time.sleep(1)
+                            break 
+                        if name_del.isdigit():
+                            indx = int(name_del) - 1
+                            if 0 <= indx < len(tables):
+                                name_del = tables[indx]
+                            else:
+                                input('unknown command, press any button for back...')
+                                continue
+                        if name_del:
+                            del_task_folder_full(name_del)
+                        else:
+                            input('unknown command, press any button for back...')
+
+
                 else:
                     help_h = f'{'='*42}\nCommand not found, pls return your request.\n{'='*42}'
 
