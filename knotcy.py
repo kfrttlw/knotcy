@@ -98,75 +98,66 @@ def redact_view_folder():
     help_help = ""
     while True:
         start_bunner()
-        view_task_folder()
+        tables = view_task_folder()
         if help_help:
             print(help_help)
             help_help = ""
 
-        action_folder = input('Please select an numer or name a folder, or (--help):\n->')   # крч здесь над сделать чтоб о принимал цифры и имена
-        
+        action_folder = input('Please select an number or name a folder, or (!quit):\n->') 
+
         if action_folder.strip() in ['!q', '!quit', '!ex', '!exit']:
-            print('retunr to menu...')
-            time.sleep(1)
             break
-#         elif action_folder.strip() in ['--h', '--help', '-h', '-help']:
-#             help_help = f'''{'='*42}
-# !r, !re, !ren, !rename -> redact name a folder.
-# !d, !del, !delete -> delete a folder.
-# !q, !quit, !ex, !exit -> for back menu.\n{'='*42}'''
-#             continue
-        
-        
-        elif action_folder.strip():
-            try:
-                while True:
-                    start_bunner()
-                    view_task_folder()
-                    redact_action = input('Select a folder for redact he name.\n-> ')  # крч здесь над сделать чтоб о принимал цифры и имена и тут как то их скрестить
-                
-                    if redact_action in ['!q', '!quit', '!ex', '!exit']:
-                            break
-                    if proverka_un_name(redact_action):
-                        # while True:
-                        start_bunner()
-                        print(f'you redacted -> {redact_action}')
+        #
+        if action_folder.isdigit():
+            indx = int(action_folder) - 1
+            if 0 <= indx < len(tables):
+                action_folder = tables[indx]
+            else:
+                input('unknown number, press any button for back...')
+                continue
+
+        if proverka_un_name(action_folder):
+            start_bunner()
+            
 
 
-                        new_name_redacted = input('''Select a new name a table or, 
-!q for exit:
--> ''')
-                        if new_name_redacted in ['!q', '!quit', '!ex', '!exit']:
-                            break
-                        else:
-                            if new_name_redacted:                                
-                                clean_name = ''.join(e for e in new_name_redacted if e.isalnum() or e == '_')
-                                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (clean_name,))
-                                if cur.fetchone():        
-                                    input(f'A folder with that name - {clean_name}, already exists\nPress any button to back menu...')
-                                else:    
-                                    if not clean_name:
-                                        input('Error: name is empty.\nPress any button to back menu...')
-                                        
-                                    # крч здесь доделать логику имя принимает маску но если такое имя существует то маска остается навсеглдда 
-                                    else:
-                                        # one_name = redact_action.replace('"', '""')
-                                        # two_name = clean_name.replace('"', '""')
-                                        cur.execute(f'ALTER TABLE "{redact_action}" RENAME TO "{clean_name}"')
-                                        connnn.commit()
-                                        input('Name changed successfully\nPress any button to back...')
-                            else: 
-                                input('Error: You entered nothing.\nPress any button to back...')
-                                    
-                
-                    else:
-                        input(f'Name - {redact_action} not found\nPlease Press any button to back...')
-
-                
-            except sqlite3.error as s:
-                input(f'unknown command: {s}\nPress any button for back...')
+            new_name_redacted = input(f'Redacting <{action_folder}> enter a new name a table or (!q)\n->')
+            if new_name_redacted in ['!q', '!quit', '!ex', '!exit']:
+                continue
+            
+            else:
+                if new_name_redacted:                                
+                    clean_name = ''.join(e for e in new_name_redacted if e.isalnum() or e == '_')
+                    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (clean_name,))
+                    if cur.fetchone():        
+                        input(f'A folder with that name - {clean_name}, already exists\nPress any button to back menu...')
+                    else:    
+                        if not clean_name:
+                            input('Error: name is empty.\nPress any button to back menu...')
                             
+                        # крч здесь доделать логику имя принимает маску но если такое имя существует то маска остается навсеглдда 
+                        else:
+                            try:
+                            # one_name = redact_action.replace('"', '""')
+                            # two_name = clean_name.replace('"', '""')
+                                cur.execute(f'ALTER TABLE "{action_folder}" RENAME TO "{clean_name}"')
+                                connnn.commit()
+                                input(f'Name changed successfully.\nNew name - <{clean_name}>\nPress any button to back...')
+                            except sqlite3.error as s:
+                                help_help = f'unknown command: {s}\n'
+                else: 
+
+                    input('Error: You entered nothing.\nPress any button to back...')
+                        
+    
+        else:
+            help_help = f'{'='*42}Name - {action_folder} not found\n{'='*42}'
+
+    # в будущем бы переенсти функцию в редакте самой папке с просмотом
         
-        help_help = f'{'='*42}\nCommand not found, please return your request.\n{'='*42}'
+                    
+
+    # help_help = f'{'='*42}\name not found, please return your request.\n{'='*42}'
 
 
 # ---------------------------------------------------------------------------------------------2
@@ -179,7 +170,6 @@ def redact_view_folder():
 # ---------------------------------ХЗдесь все с sql 3 пункт------------------------------------1
 def del_task_folder_full(name_for_del):
     try:
-            
         cur.execute("""SELECT name
                     FROM sqlite_master 
                     WHERE type='table' AND name=?""",
@@ -193,7 +183,7 @@ def del_task_folder_full(name_for_del):
         else:
             print(f'table with name - {name_for_del}, does not exist ')
     except sqlite3.Error as w:
-            print(f'error deleting table: {w}')
+        print(f'error deleting table: {w}')
 
     input('press any button for back menu...') 
     
@@ -251,6 +241,10 @@ exit or quit - for exit
                 elif user_action_two.lower().strip() in ['!r', '!re' '!redact']:
                     redact_view_folder()
 
+
+
+
+
                 elif user_action_two.lower().strip() in ['!d', '!del', '!delete']:
                     while True:
                         start_bunner()
@@ -267,12 +261,12 @@ exit or quit - for exit
                             if 0 <= indx < len(tables):
                                 name_del = tables[indx]
                             else:
-                                input('unknown command, press any button for back...')
+                                input('unknown number, press any button for back...')
                                 continue
-                        if name_del:
+                        if proverka_un_name(name_del): # здесь над проверк сделать есть ли эт имя ваще а то прост в else кидает
                             del_task_folder_full(name_del)
                         else:
-                            input('unknown command, press any button for back...')
+                            input('unknown name, press any button for back...')
 
 
                 else:
