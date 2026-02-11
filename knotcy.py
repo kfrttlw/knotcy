@@ -39,7 +39,7 @@ def add_new_table(name):
     clean_name = ''.join(e for e in name if e.isalnum() or e == '_')
 
     if not clean_name:
-        input('Error: name is empty.\nPress any buuton to back menu...')
+        input('Error: name is empty.\nPress any button to back menu...')
         return
 
     if proverka_un_name(clean_name):
@@ -143,7 +143,7 @@ def redact_view_folder():
                                 cur.execute(f'ALTER TABLE "{action_folder}" RENAME TO "{clean_name}"')
                                 connnn.commit()
                                 input(f'Name changed successfully.\nNew name - <{clean_name}>\nPress any button to back...')
-                            except sqlite3.error as s:
+                            except sqlite3.Error as s:
                                 help_help = f'unknown command: {s}\n'
                 else: 
 
@@ -238,7 +238,7 @@ exit or quit - for exit
 !q, !quit, !ex, !exit -> for back menu.\n{'='*42}'''
                     continue                
                                    
-                elif user_action_two.lower().strip() in ['!r', '!re' '!redact']:
+                elif user_action_two.lower().strip() in ['!r', '!re', '!redact']:
                     redact_view_folder()
 
 
