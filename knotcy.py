@@ -3,31 +3,22 @@ import sqlite3
 import time
 # import random
 # import string
+from func import start_bunner
+
 from datetime import datetime
-
-
+from func import view_and_redact
+# (connnn: sqlite3.Connection, name_table: str,) -> None:
+# from func.view_redact import all_nothes_in_table
+# (connnn: sqlite3.Connection, name_table: str,) -> None:
 # ---------forcomfy------------------------------1
-rise = r""" ____  __.              __
-|    |/ _| ____   _____/  |_  ____ ___.__.
-|      <  /    \ /  _ \   __\/ ___<   |  |
-|    |  \|   |  (  <_> )  | \  \___\___  |
-|____|__ \___|  /\____/|__|  \___  > ____|
-        \/    \/                 \/\/"""
 slash = '=' * 20 + '<>' + '=' * 20
 
 
-def clear_all():
+def clear_all() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def start_bunner(info=""):
-    clear_all()
-    print(f'{slash}\n{rise}\n{slash}')
-    if info:
-        print(info)
-
-
-def proverka_un_name(tab_nam):
+def proverka_un_name(tab_nam: str) -> bool:
     cur.execute("""
                 SELECT name
                 FROM sqlite_master
@@ -43,7 +34,7 @@ cur = connnn.cursor()
 
 
 # для создания папки задач
-def add_new_table(name):
+def add_new_table(name: str) -> None:
 
     clean_name = ''.join(e for e in name if e.isalnum() or e == '_')
 
@@ -74,7 +65,7 @@ def add_new_table(name):
 # ---------------------------------ХЗдесь все для sql 2 пункт---------------1
 
 
-def view_task_folder():  # показ всех таблиц
+def view_task_folder() -> list[str]:  # показ всех таблиц
     try:
         cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
         all_tables = [tab[0] for tab in cur.fetchall()]
@@ -94,7 +85,7 @@ def view_task_folder():  # показ всех таблиц
 # ---------------------------------ХЗдесь все c sql 2.2 пункт---------1
 
 
-def redact_view_folder():
+def redact_view_folder() -> None:
     help_help = ""
     while True:
         start_bunner()
@@ -172,15 +163,10 @@ def redact_view_folder():
         else:
             help_help = f'{'='*42}Name - {action_folder} not found\n{'='*42}'
 # в будущем бы переенсти функцию в редакте самой папке с просмотом
-# help_help = f'{'='*42}\name not found, please return your request.\n{'='*42}'
-
-
-# -----------------------------------------------2
-# --------ХЗдесь все с sql 2.3 пункт------------1
-# -------------------------------------------------2
-
 # -----------------ХЗдесь все с sql 3 пункт---------------1
-def del_task_folder_full(name_for_del):
+
+
+def del_task_folder_full(name_for_del: str) -> None:
     try:
         cur.execute("""SELECT name
                     FROM sqlite_master
@@ -226,7 +212,7 @@ exit or quit - for exit
             help_h = ""
             while True:
                 start_bunner()
-                view_task_folder()
+                tables = view_task_folder()
                 if help_h:
                     print(help_h)
                     help_h = ""
@@ -241,6 +227,22 @@ exit or quit - for exit
                     print('retutn to main menu...')
                     time.sleep(0.4)
                     break
+
+                if user_action_two.isdigit():
+                    indx = int(user_action_two) - 1
+                    if 0 <= indx < len(tables):
+                        user_action_two = tables[indx]
+                    else:
+                        input(
+                            'unknown num, press any button for back...'
+                            )
+                        continue
+                if proverka_un_name(user_action_two):
+                    start_bunner()
+                    view_and_redact(connnn, user_action_two)
+                    # здесь ласт остановка над доделать
+                    # здесь ща функ вставить над
+
                 elif user_action_two.lower().strip() in [
                     '--help', '-help', '--h', '-h'
                 ]:
@@ -285,6 +287,7 @@ exit or quit - for exit
                             del_task_folder_full(name_del)
                         else:
                             input('unknown name, press any button for back...')
+                # здесб будет просмотр содержимого туда же и редакт перенести
 
                 else:
                     help_h = (
