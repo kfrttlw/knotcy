@@ -1,21 +1,18 @@
-import os
+# import os
 import sqlite3
 import time
 # import random
 # import string
 from func import start_bunner
-
+from func import clear_all
 from datetime import datetime
 from func import view_and_redact
 # (connnn: sqlite3.Connection, name_table: str,) -> None:
 # from func.view_redact import all_nothes_in_table
 # (connnn: sqlite3.Connection, name_table: str,) -> None:
+
 # ---------forcomfy------------------------------1
 slash = '=' * 20 + '<>' + '=' * 20
-
-
-def clear_all() -> None:
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def proverka_un_name(tab_nam: str) -> bool:
@@ -183,131 +180,114 @@ def del_task_folder_full(name_for_del: str) -> None:
     except sqlite3.Error as w:
         print(f'error deleting table: {w}')
 
-    input('press any button for back menu...')
+    input('press any button for back menu...')  # замена help_h
 
 
 # -------------------------------------------------------------------------2
 
 def start_main():
+    help_h = ""
     while True:
-        # clear_all()
-        # print(f'{slash}\n{rise}\n{slash}')
         start_bunner()
-
+        tables = view_task_folder()
         now = datetime.now()
         x = "-" * 16
         print(f"{x}{now.strftime('%d.%m.%Y')}{x}")
-
-        user_q = input('''Welcome, select action:
-1 - add a new task folder.
-2 - view task folders.
-exit or quit - for exit
--> ''')
-        if user_q.lower().strip() in ['1', 'add', 'new']:
-            start_bunner()
-            names = input('pls enter name task folder.\n-> ').strip()
-            add_new_table(names)
-            # input('press any button...')
-        elif user_q.lower().strip() in ['2', 'two', 'view']:  # доделать!
+        if help_h:
+            print(help_h)
             help_h = ""
+        user_action = input(
+            'Welcome, select an action or folder'
+            '(--help):\n-> '
+            )
+
+        if user_action.lower().strip() in [
+            '!quit', '!q', '!ex', '!exit'
+        ]:
+            print('Exit...')
+            time.sleep(0.4)
+            clear_all()
+            break
+
+        if user_action.isdigit():
+            indx = int(user_action) - 1
+            if 0 <= indx < len(tables):
+                user_action = tables[indx]
+            else:
+                input(
+                    'unknown num, press any button for back...'
+                    )
+                continue
+        if proverka_un_name(user_action):
+            start_bunner()
+            view_and_redact(connnn, user_action)
+
+        elif user_action.lower().strip() in [
+            '--help', '-help', '--h', '-h'
+        ]:
+            help_h = f'''{'='*42}
+--all command:
+!r, !re, !ren, !rename -> redact name a folder.
+!a, !add, !create, !cr -> create table.
+!d, !del, !delete -> delete a folder.
+!q, !quit, !ex, !exit -> for exit.\n{'='*42}'''
+            continue
+
+        elif user_action.lower().strip() in [
+            '!r', '!re', '!redact'
+        ]:
+            redact_view_folder()
+
+        elif user_action.lower().strip() in [
+            '!a', '!add', '!create', '!cr'
+        ]:
             while True:
                 start_bunner()
-                tables = view_task_folder()
-                if help_h:
-                    print(help_h)
-                    help_h = ""
-                user_action_two = input(
-                    'please select an action or (--help):'
-                    '\n->'
-                    )
-
-                if user_action_two.lower().strip() in [
-                    '!quit', '!q', '!ex', '!exit'
+                names = input('pls enter name task folder or !q.\n-> ').strip()
+                if names in [
+                    '!q', '!quit', '!ex', '!exit'
                 ]:
-                    print('retutn to main menu...')
-                    time.sleep(0.4)
                     break
+                else:
+                    add_new_table(names)
 
-                if user_action_two.isdigit():
-                    indx = int(user_action_two) - 1
+        elif user_action.lower().strip() in [
+            '!d', '!del', '!delete'
+        ]:
+            while True:
+                start_bunner()
+                # view_task_folder()
+                tables = view_task_folder()
+
+                name_del = input(
+                    'pls enter a task folder for del, '
+                    '!q to cancel.\n-> '  # испаврить везде
+                    )
+                if name_del in ['!q', '!quit', '!ex', '!exit']:
+                    print('back to menu...')
+                    time.sleep(1)
+                    break
+                if name_del.isdigit():
+                    indx = int(name_del) - 1
                     if 0 <= indx < len(tables):
-                        user_action_two = tables[indx]
+                        name_del = tables[indx]
                     else:
                         input(
                             'unknown num, press any button for back...'
                             )
                         continue
-                if proverka_un_name(user_action_two):
-                    start_bunner()
-                    view_and_redact(connnn, user_action_two)
-                    # здесь ласт остановка над доделать
-                    # здесь ща функ вставить над
-
-                elif user_action_two.lower().strip() in [
-                    '--help', '-help', '--h', '-h'
-                ]:
-                    help_h = f'''{'='*42}
---all command:
-!r, !re, !ren, !rename -> redact name a folder.
-!d, !del, !delete -> delete a folder.
-!q, !quit, !ex, !exit -> for back menu.\n{'='*42}'''
-                    continue
-
-                elif user_action_two.lower().strip() in [
-                    '!r', '!re', '!redact'
-                ]:
-                    redact_view_folder()
-
-                elif user_action_two.lower().strip() in [
-                    '!d', '!del', '!delete'
-                ]:
-                    while True:
-                        start_bunner()
-                        # view_task_folder()
-                        tables = view_task_folder()
-
-                        name_del = input(
-                            'pls enter a task folder for del,'
-                            'q to cancel.\n-> '
-                            )
-                        if name_del in ['!q', '!quit', '!ex', '!exit']:
-                            print('back to menu...')
-                            time.sleep(1)
-                            break
-                        if name_del.isdigit():
-                            indx = int(name_del) - 1
-                            if 0 <= indx < len(tables):
-                                name_del = tables[indx]
-                            else:
-                                input(
-                                    'unknown num, press any button for back...'
-                                    )
-                                continue
-                        if proverka_un_name(name_del):
-                            del_task_folder_full(name_del)
-                        else:
-                            input('unknown name, press any button for back...')
-                # здесб будет просмотр содержимого туда же и редакт перенести
-
+                if proverka_un_name(name_del):
+                    del_task_folder_full(name_del)
                 else:
-                    help_h = (
-                        f'{'='*42}\nCommand not found,'
-                        f'Please return your request.\n{'='*42}'
-                    )
-
-        elif user_q.lower().strip() in ['exit', 'ex', 'quit', 'q']:
-            start_bunner()
-            print('thank you, goodbye!')
-            break
+                    input('unknown name, press any button for back...')
+        # здесб будет просмотр содержимого туда же и редакт перенести
 
         else:
-            start_bunner()
-            print('command not found')
-            input('press any button for back menu...')
+            help_h = (
+                f'{'='*42}\nCommand not found,'
+                f'Please return your request.\n{'='*42}'
+            )
 
 
 if __name__ == '__main__':
     start_main()
-
-# при переименовании
-# git remote set-url origin git@github.com:ваш_логин/новое_название.git
