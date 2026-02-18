@@ -6,7 +6,8 @@ import time
 from func import start_bunner
 from func import clear_all
 from datetime import datetime
-from func import view_and_redact
+from func import task_red
+from func import folder_red
 # (connnn: sqlite3.Connection, name_table: str,) -> None:
 # from func.view_redact import all_nothes_in_table
 # (connnn: sqlite3.Connection, name_table: str,) -> None:
@@ -28,6 +29,9 @@ def proverka_un_name(tab_nam: str) -> bool:
 
 connnn = sqlite3.connect('knotcy_base.sqlite')
 cur = connnn.cursor()
+
+task = task_red(connnn)  # придумать название
+folder = folder_red(connnn)
 
 
 # для создания папки задач
@@ -220,7 +224,7 @@ def start_main():
                 continue
         if proverka_un_name(user_action):
             start_bunner()
-            view_and_redact(connnn, user_action)
+            task.view_and_redact(user_action)
 
         elif user_action.lower().strip() in [
             '--help', '-help', '--h', '-h'

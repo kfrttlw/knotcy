@@ -1,11 +1,11 @@
-from .view_redact import view_and_redact
-from .view_redact import all_nothes_in_table
+from .task_redact import task_red
+from .folder_redact import folder_red
 from .banner import start_bunner
 from .banner import clear_all
 
 __all__ = [
-    'view_and_redact',
-    'all_nothes_in_table',
+    'task_red',
+    'folder_red',
     'start_bunner',
     'clear_all'
 ]
