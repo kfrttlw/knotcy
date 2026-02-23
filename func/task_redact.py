@@ -51,34 +51,48 @@ class task_red:
                 self.connnn.commit()
                 entry = f'{'='*7}Created a new task in <{name_table}>{'='*7}'
 
-        def deleting_task(self, name_table: str) -> None:
-            help_help = ""
-            while True:
-                start_bunner()
-                real_num = self.all_nothes_in_table(name_table)
-                if real_num:
-                    if help_help:
-                        print(help_help)
-                        help_help = ""
-                    num_table = int(input(
-                        'Select a number for deleting or (!q).\n-> '
-                        ))
-                    if num_table in [
-                        '!quit', '!q', '!ex', '!exit'
-                    ]:
-                        break
-                    if 1 <= real_num <= len(real_num):
-                        id_task = real_num[num_table - 1]
-                        try:
-                            self.cur.execute(f'''
-                                             DELETE FROM "{name_table}"
-                                             WHERE id = ?''',
-                                             (id_task,))
-                            self.connnn.commit()
-                        except sqlite3.Error as a:
+    def deleting_task(self, name_table: str) -> None:
+        help_help = ""
+        while True:
+            start_bunner()
+            real_num = self.all_nothes_in_table(name_table)
+            if real_num:
+                if help_help:
+                    print(help_help)
+                    help_help = ""
+                num_table = input(
+                    'Select a number for deleting or (!q).\n-> '
+                    )
+                if num_table in [
+                    '!quit', '!q', '!ex', '!exit'
+                ]:
+                    break
+                else:
+                    try:
+                        number_table = int(num_table)
+                        if 1 <= number_table <= len(real_num):
+                            id_task = real_num[number_table - 1]
+                            try:
+                                self.cur.execute(
+                                    f'''
+                                    DELETE FROM "{name_table}"
+                                    WHERE id = ?''',
+                                    (id_task,)
+                                    )
+                                self.connnn.commit()
+                            except sqlite3.Error as a:
+                                help_help = (
+                                    f'Error sqlite: {a}'
+                                )
+                        else:
                             help_help = (
-                                f'Error: {a}'
+                                f'Number - {number_table} '
+                                'not found in list.'
                             )
+                    except ValueError as e:
+                        help_help = (
+                                    f'Error number: {e}'
+                                )
 
     #  main
     def view_and_redact(self, name_table: str,) -> None:
@@ -100,16 +114,19 @@ class task_red:
                 '--help', '-help', '--h', '-h'
             ]:
                 help_help = f'''{'='*42}
-    --all command:
-    !r, !re, !redact, !redacte -> redact task.
-    !a, !add, !cr, !create -> create a task.
-    !d, !del, !delete -> delete a task.
-    !q, !quit, !ex, !exit -> for back menu.'''
+--all command:
+!r, !re, !redact, !redacte -> redact task.
+!a, !add, !cr, !create -> create a task.
+!d, !del, !delete -> delete a task.
+!q, !quit, !ex, !exit -> for back menu.'''
                 continue
             elif action.lower().strip() in [
                 '!a', '!add', '!cr', '!create'
             ]:
                 self.create_task(name_table)
-
+            elif action.lower().strip() in [
+                '!d', '!delete', '!del'
+            ]:
+                self.deleting_task(name_table)
             else:
                 help_help = f'{'='*42}\nNot found command - {action}.'

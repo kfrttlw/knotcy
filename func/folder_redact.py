@@ -22,7 +22,7 @@ class folder_red:
                              FROM sqlite_master
                              WHERE type='table' AND NAME NOT LIKE 'sqlite_%';
                              """)
-            # здесь глянут ьпотом не будт ли вывод лишнего
+            # разгрузить глаза потом слишком много места занимают =
             all_tables = [tab[0] for tab in self.cur.fetchall()]
             if all_tables:
                 print(f"{'='*42}\nall_tables:")
@@ -32,7 +32,6 @@ class folder_red:
             else:
                 print(f'{'='*42}\nYou dont have any folders with task.')
                 return []
-                # input('press any button for back menu...')
         except sqlite3.Error as a:
             print(f'Error when viewing folders task: {a}')
             return []

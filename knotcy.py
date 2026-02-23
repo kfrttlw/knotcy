@@ -89,7 +89,6 @@ def start_main():
         ]:
             while True:
                 start_bunner()
-                # view_task_folder()
                 tables = folder.view_folder()
 
                 name_del = input(
