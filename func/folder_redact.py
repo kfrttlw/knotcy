@@ -1,3 +1,5 @@
+'''To work with folder.'''
+
 import sqlite3
 from .banner import start_bunner
 

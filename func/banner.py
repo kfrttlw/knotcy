@@ -1,4 +1,7 @@
+'''To display a banner.'''
+
 import os
+
 # banner
 
 rise = r""" ____  __.              __

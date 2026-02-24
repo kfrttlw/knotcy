@@ -1,3 +1,5 @@
+'''Main entry point for the Knotcy task manager.'''
+
 import sqlite3
 import time
 from func import start_bunner
@@ -5,8 +7,8 @@ from func import clear_all
 from datetime import datetime
 from func import task_red
 from func import folder_red
+from func import FOLDER_HELP
 # ---------forcomfy------------------------------1
-
 slash = '=' * 20 + '<>' + '=' * 20
 connnn = sqlite3.connect('knotcy_base.sqlite')
 cur = connnn.cursor()
@@ -57,12 +59,9 @@ def start_main():
         elif user_action.lower().strip() in [
             '--help', '-help', '--h', '-h'
         ]:
-            help_h = f'''{'='*42}
---all command:
-!r, !re, !ren, !rename -> redact name a folder.
-!a, !add, !create, !cr -> create table.
-!d, !del, !delete -> delete a folder.
-!q, !quit, !ex, !exit -> for exit.\n{'='*42}'''
+            help_h = (
+                f'{'='*42}\n{FOLDER_HELP}\n{'='*42}'
+            )
             continue
 
         elif user_action.lower().strip() in [
@@ -75,8 +74,10 @@ def start_main():
         ]:
             while True:
                 start_bunner()
-                names = input(f'Enter name task folder or !q.\n{'='*42}\n-> ').strip()
-                # над не над
+                names = input(
+                    f'Enter name task folder or !q.'
+                    f'\n{'='*42}\n-> '
+                ).strip()
                 if names in [
                     '!q', '!quit', '!ex', '!exit'
                 ]:

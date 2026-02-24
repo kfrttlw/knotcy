@@ -1,5 +1,8 @@
+'''To work with task.'''
+
 import sqlite3
 from .banner import start_bunner
+from .messages import TASK_HELP
 
 
 class task_red:
@@ -61,6 +64,7 @@ class task_red:
                     print(help_help)
                     help_help = ""
                 num_table = input(
+                    f'{'='*42}\n'
                     'Select a number for deleting or (!q).\n-> '
                     )
                 if num_table in [
@@ -94,6 +98,96 @@ class task_red:
                                     f'Error number: {e}'
                                 )
 
+    def redact_task(self, name_table: str) -> None:
+        help_help = ""
+        while True:
+            start_bunner()
+            real_num = self.all_nothes_in_table(name_table)
+            if help_help:
+                print(help_help)
+                help_help = ""
+            user_input = input(f'{'='*42}\nSelect a number or (!q).\n->')
+            if user_input.lower().strip() in [
+                '!q', '!quit', '!ex', '!exit'
+            ]:
+                break
+            else:
+                try:
+                    num_table = int(user_input)
+                    if 1 <= num_table <= len(real_num):
+                        id_task = real_num[num_table - 1]
+                        new_task = input(
+                            f'{'='*42}\nInput new task or (!q).\n-> '
+                        ).strip()
+                        if new_task in [
+                            '!q', '!quit', '!ex', '!exit'
+                        ]:
+                            break
+                        else:
+                            try:
+                                self.cur.execute(
+                                    f'''
+                                    UPDATE "{name_table}"
+                                    SET name = ?
+                                    WHERE id =?''',
+                                    (new_task, id_task))
+                                self.connnn.commit()
+                                help_help = (
+                                    'Task update successfuly.'
+                                )
+                            except sqlite3.Error as e:
+                                help_help = (
+                                    f'Error sqlite3: {e}'
+                                )
+                    else:
+                        help_help = (
+                            f'Number - {num_table}, not on the list.'
+                        )
+                except ValueError as a:
+                    help_help = (
+                        f'Error value: {a}'
+                    )
+    def complete_task(self, name_table: str) -> None:
+        # мейби сделать ретурн для вывода прогресса
+        help_help = ""
+        while True:
+            start_bunner()
+            real_num = self.all_nothes_in_table(name_table)
+            if help_help:
+                print(help_help)
+                help_help = ""
+            input_user = input('Select a number in task for complete.\n->')
+            if input_user in [
+                '!q', '!quit', '!ex', '!exit'
+            ]:
+                break
+            else:
+                try:
+                    num_table = int(input_user)
+                    if 1 <= num_table <= len(real_num):
+                        id_task = real_num[num_table - 1]
+                        check_status = input(
+                            'Press any button to switch status or (!q)?\n-> '
+                        )
+                        if check_status in [
+                            '!q', '!quit', '!ex', '!exit'
+                        ]:
+                            break
+                        else:
+                            self.cur.execute('''
+                                             SELECT status
+                                             FROM "{name_table}"
+                                             WHERE id = ?''',
+                                             (id_task))
+                    else:
+                        help_help = (
+                            f'Number - {num_table}, not on the list.'
+                        )
+                except ValueError as a:
+                    help_help = (
+                        f'Number - {num_table}, not on the list.'
+                    )
+
     #  main
     def view_and_redact(self, name_table: str,) -> None:
         help_help = ""
@@ -113,12 +207,9 @@ class task_red:
             if action.lower().strip() in [
                 '--help', '-help', '--h', '-h'
             ]:
-                help_help = f'''{'='*42}
---all command:
-!r, !re, !redact, !redacte -> redact task.
-!a, !add, !cr, !create -> create a task.
-!d, !del, !delete -> delete a task.
-!q, !quit, !ex, !exit -> for back menu.'''
+                help_help = (
+                    f'{'='*42}\n{TASK_HELP}'
+                )
                 continue
             elif action.lower().strip() in [
                 '!a', '!add', '!cr', '!create'
@@ -128,5 +219,9 @@ class task_red:
                 '!d', '!delete', '!del'
             ]:
                 self.deleting_task(name_table)
+            elif action.lower().strip() in [
+                '!r', '!re', '!ren', '!rename'
+            ]:
+                self.redact_task(name_table)
             else:
                 help_help = f'{'='*42}\nNot found command - {action}.'
