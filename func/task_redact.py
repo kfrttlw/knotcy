@@ -40,8 +40,10 @@ class task_red:
             if entry:
                 print(entry)
                 entry = ""
-
-            new_task = input('Enter your task or (!q)\n-> ')
+            print(f'< You in {name_table}>'.center(42, '='))
+            new_task = input(
+                f'{'='*42}\nEnter your task or (!q)\n{'='*42}\n-> '
+                )
             if new_task.lower().strip() in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
@@ -52,7 +54,10 @@ class task_red:
                     (new_task,)
                 )
                 self.connnn.commit()
-                entry = f'{'='*7}Created a new task in <{name_table}>{'='*7}'
+                entry = (
+                    '< Created successfuly. >'
+                    .center(42, '=')
+                )
 
     def deleting_task(self, name_table: str) -> None:
         help_help = ""
@@ -147,6 +152,7 @@ class task_red:
                     help_help = (
                         f'Error value: {a}'
                     )
+
     def complete_task(self, name_table: str) -> None:
         # мейби сделать ретурн для вывода прогресса
         help_help = ""
@@ -156,36 +162,68 @@ class task_red:
             if help_help:
                 print(help_help)
                 help_help = ""
-            input_user = input('Select a number in task for complete.\n->')
+            input_user = input(
+                f'{'='*42}\nSelect a number in task for complete or (!q)'
+                f'\n{'='*42}.\n-> '
+                )
             if input_user in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
             else:
                 try:
-                    num_table = int(input_user)
+                    num_table: int = int(input_user)
                     if 1 <= num_table <= len(real_num):
                         id_task = real_num[num_table - 1]
-                        check_status = input(
-                            'Press any button to switch status or (!q)?\n-> '
-                        )
-                        if check_status in [
-                            '!q', '!quit', '!ex', '!exit'
-                        ]:
-                            break
-                        else:
-                            self.cur.execute('''
-                                             SELECT status
-                                             FROM "{name_table}"
-                                             WHERE id = ?''',
-                                             (id_task))
+                        while True:
+                            start_bunner()
+                            self.all_nothes_in_table(name_table)
+                            center_title = (
+                                f'< You redacted task - {id_task}. >'
+                                .center(42, '=')
+                                )
+                            check_status = input(
+                                f'{center_title}'
+                                '\nPress any button to switch '
+                                f'status or (!q).\n{'='*42}\n-> '
+                            )
+                            if check_status in [
+                                '!q', '!quit', '!ex', '!exit'
+                            ]:
+                                break
+                            else:
+                                try:
+                                    self.cur.execute(f'''
+                                                     SELECT status
+                                                     FROM "{name_table}"
+                                                     WHERE id = ?''',
+                                                     (id_task,))
+                                    current_status = self.cur.fetchone()[0]
+                                    new_status = (
+                                        '[X]' if current_status == '[ ]'
+                                        else '[ ]'
+                                    )
+                                    self.cur.execute(f'''
+                                                     UPDATE {name_table}
+                                                     SET status = ?
+                                                     WHERE id = ?''',
+                                                     (new_status, id_task))
+                                    self.connnn.commit()
+                                    help_help = (
+                                        f'{'='*42}\nStatus update successfuly.'
+                                    )
+                                except sqlite3.Error as q:
+                                    help_help = (
+                                        f'Error sqlite3: {q}'
+                                    )
                     else:
                         help_help = (
-                            f'Number - {num_table}, not on the list.'
+                            f'{'='*42}\nNumber - {num_table}, not on the list.'
                         )
-                except ValueError as a:
+
+                except ValueError as q:
                     help_help = (
-                        f'Number - {num_table}, not on the list.'
+                        f'\n{'='*42}Error value: {q} .'
                     )
 
     #  main
@@ -193,7 +231,7 @@ class task_red:
         help_help = ""
         while True:
             start_bunner()
-            print(f'{'='*15}<You in {name_table}>{'='*15}')
+            print(f'<You in {name_table}>'.center(42, '='))
             self.all_nothes_in_table(name_table)
             if help_help:
                 print(help_help)
@@ -223,5 +261,9 @@ class task_red:
                 '!r', '!re', '!ren', '!rename'
             ]:
                 self.redact_task(name_table)
+            elif action.lower().strip() in [
+                '!c', '!complete', '!done'
+            ]:
+                self.complete_task(name_table)
             else:
                 help_help = f'{'='*42}\nNot found command - {action}.'

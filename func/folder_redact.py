@@ -24,10 +24,9 @@ class folder_red:
                              FROM sqlite_master
                              WHERE type='table' AND NAME NOT LIKE 'sqlite_%';
                              """)
-            # разгрузить глаза потом слишком много места занимают =
             all_tables = [tab[0] for tab in self.cur.fetchall()]
             if all_tables:
-                print(f"{'='*42}\nall_tables:")
+                print('<all_tables>'.center(42, '='))
                 for w, table_all_name in enumerate(all_tables, 1):
                     print(f'[{w}] -> {table_all_name}')
                 return all_tables
@@ -104,8 +103,9 @@ class folder_red:
                 help_help = ""
 
             action_folder = input(
-                'Please select an number or name a folder,'
-                'or (!quit):\n->'
+                f'{'='*42}\nPlease select an number '
+                '\nor name a folder, '
+                f'or (!quit):\n{'='*42}\n->'
             )
 
             if action_folder.lower().strip() in [
@@ -123,9 +123,10 @@ class folder_red:
 
             if self.proverka_un_name(action_folder):
                 start_bunner()
+                center_title = f'< Redacting {action_folder} >'.center(42, '=')
                 new_name_redacted = input(
-                    f'Redacting <{action_folder}>'
-                    f'enter a new name a table or (!q)\n->'
+                    f'{center_title}'
+                    f'\nenter a new name, a table or (!q)\n{'='*42}\n->'
                 )
                 if new_name_redacted in [
                     '!q', '!quit', '!ex', '!exit'
@@ -142,15 +143,16 @@ class folder_red:
                                          (clean_name,))
                         if self.cur.fetchone():
                             input(
-                                f'Folder with name - {clean_name}, '
+                                f'{'='*42}\nFolder with name - {clean_name}, '
                                 'already exists'
-                                '\nPress any button to back menu...'
+                                f'\nPress any button to back menu...\n{'='*42}'
                                 )
                         else:
                             if not clean_name:
                                 input(
-                                    'Error: name is empty.'
-                                    '\nPress any button to back menu...'
+                                    f'{'='*42}\nError: name is empty.'
+                                    f'\nPress any button '
+                                    f'to back menu...\n{'='*42}'
                                     )
 
                             else:
@@ -159,22 +161,23 @@ class folder_red:
                                                 ALTER TABLE "{action_folder}"
                                                 RENAME TO "{clean_name}"''')
                                     self.connnn.commit()
-                                    input(
-                                        'Name changed successfully.'
+                                    help_help = (
+                                        f'{'='*42}\nName changed successfully.'
                                         f'\nNew name - <{clean_name}>'
-                                        '\nPress any button to back...'
                                         )
                                 except sqlite3.Error as s:
-                                    help_help = f'unknown command: {s}\n'
+                                    help_help = (
+                                        f'{'='*42}\nunknown command: {s}'
+                                        f'\n{'='*42}'
+                                    )
                     else:
 
-                        input(
-                            'Error: You entered nothing'
-                            '\nPress any button to back...'
+                        help_help = (
+                            f'{'='*42}\nError: You entered nothing\n{'='*42}'
                             )
 
             else:
                 help_help = (
-                    f'{'='*42}Name - {action_folder} '
+                    f'{'='*42}\nName - {action_folder} '
                     f'not found\n{'='*42}'
                 )
