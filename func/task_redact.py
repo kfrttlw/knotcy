@@ -1,6 +1,7 @@
 '''To work with task.'''
 
 import sqlite3
+import math
 from .banner import start_bunner
 from .messages import TASK_HELP
 
@@ -10,7 +11,9 @@ class task_red:
         self.connnn = connection
         self.cur = self.connnn.cursor()
 
-    def all_nothes_in_table(self, name_table: str) -> list:
+    def all_nothes_in_table(
+            self, name_table: str, page: int = 1, lim_page: int = 5
+            ) -> list:
         try:
             self.cur.execute(f'''
                              SELECT id,
@@ -21,17 +24,46 @@ class task_red:
             if not alls:
                 print('Список пуст.')
                 return []
-
-            real_num = []
+            total_task = len(alls)
+            total_page = math.ceil(total_task / lim_page)
+            start_num = (page - 1) * lim_page
+            end_num = start_num + lim_page
+            lim_id = alls[start_num:end_num]
             if alls:
-                for task_id, (id, name, status) in enumerate(alls, start=1):
-                    print(f'{task_id}: {name} {status}')  # сделать нумерциаю
-                    real_num.append(id)
-            return real_num
+                print(f'Page: {page}/{total_page}'.center(42, '='))
+                for task_id, (id, name, status) in (
+                        enumerate(lim_id, start=start_num + 1)):
+                    print(f'{task_id}: {name} {status}')
+                text_center = (
+                    '!n - next page || !p - prev page'.center(42, '='))
+                print(f'{'='*42}\n'
+                      f'{text_center}')
+            return alls
             # доработать чтоб было сверху
         except sqlite3.Error as w:
             print(f'Error reading table - {name_table}:\n{w}')
             return []
+
+    def movie_task(
+            self,
+            input_user: str,
+            page: int,
+            total_items: int,
+            limit: int = 5
+            ) -> tuple[int, str, bool]:
+        if input_user in [
+            '!n', '!next'
+        ]:
+            if page * limit < total_items:
+                return page + 1, "", True
+            return page, "No more pages.".center(42, '='), True
+        if input_user in [
+            '!p', '!prev', '!l', '!last'
+        ]:
+            if page > 1:
+                return page - 1, "", True
+            return page, "You are on the first page".center(42, "="), True
+        return page, "", False
 
     def create_task(self, name_table: str) -> None:
         entry = ""
@@ -55,15 +87,16 @@ class task_red:
                 )
                 self.connnn.commit()
                 entry = (
-                    '< Created successfuly. >'
+                    '< Created successfully. >'
                     .center(42, '=')
                 )
 
     def deleting_task(self, name_table: str) -> None:
         help_help = ""
+        page = 1
         while True:
             start_bunner()
-            real_num = self.all_nothes_in_table(name_table)
+            real_num = self.all_nothes_in_table(name_table, page=page)
             if real_num:
                 if help_help:
                     print(help_help)
@@ -80,7 +113,7 @@ class task_red:
                     try:
                         number_table = int(num_table)
                         if 1 <= number_table <= len(real_num):
-                            id_task = real_num[number_table - 1]
+                            id_task = real_num[number_table - 1][0]
                             try:
                                 self.cur.execute(
                                     f'''
@@ -120,7 +153,7 @@ class task_red:
                 try:
                     num_table = int(user_input)
                     if 1 <= num_table <= len(real_num):
-                        id_task = real_num[num_table - 1]
+                        id_task = real_num[num_table - 1][0]
                         new_task = input(
                             f'{'='*42}\nInput new task or (!q).\n-> '
                         ).strip()
@@ -138,7 +171,7 @@ class task_red:
                                     (new_task, id_task))
                                 self.connnn.commit()
                                 help_help = (
-                                    'Task update successfuly.'
+                                    'Task update successfully.'
                                 )
                             except sqlite3.Error as e:
                                 help_help = (
@@ -155,10 +188,11 @@ class task_red:
 
     def complete_task(self, name_table: str) -> None:
         # мейби сделать ретурн для вывода прогресса
+        page = 1
         help_help = ""
         while True:
             start_bunner()
-            real_num = self.all_nothes_in_table(name_table)
+            real_num = self.all_nothes_in_table(name_table, page=page)
             if help_help:
                 print(help_help)
                 help_help = ""
@@ -166,24 +200,36 @@ class task_red:
                 f'{'='*42}\nSelect a number in task for complete or (!q)'
                 f'\n{'='*42}.\n-> '
                 )
+            page, message, check = self.movie_task(
+                input_user, page, len(real_num)
+                )
             if input_user in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
+            if check:
+                help_help = f"{message}"
+                continue
             else:
                 try:
                     num_table: int = int(input_user)
                     if 1 <= num_table <= len(real_num):
-                        id_task = real_num[num_table - 1]
+                        db_id, name, status = real_num[num_table - 1]
                         while True:
                             start_bunner()
-                            self.all_nothes_in_table(name_table)
+                            if help_help:
+                                print(help_help)
+                                help_help = ""
+                            print(
+                                f'{'='*42}\n{db_id}: {name} {status}.'
+                                f'\n{'='*42}'
+                                )
                             center_title = (
-                                f'< You redacted task - {id_task}. >'
+                                f'< You redacted task - {db_id}. >'
                                 .center(42, '=')
                                 )
                             check_status = input(
-                                f'{center_title}'
+                                f'{center_title}\n{'='*42}'
                                 '\nPress any button to switch '
                                 f'status or (!q).\n{'='*42}\n-> '
                             )
@@ -197,20 +243,22 @@ class task_red:
                                                      SELECT status
                                                      FROM "{name_table}"
                                                      WHERE id = ?''',
-                                                     (id_task,))
+                                                     (db_id,))
                                     current_status = self.cur.fetchone()[0]
                                     new_status = (
                                         '[X]' if current_status == '[ ]'
                                         else '[ ]'
                                     )
                                     self.cur.execute(f'''
-                                                     UPDATE {name_table}
+                                                     UPDATE "{name_table}"
                                                      SET status = ?
                                                      WHERE id = ?''',
-                                                     (new_status, id_task))
+                                                     (new_status, db_id))
                                     self.connnn.commit()
+                                    status = new_status
                                     help_help = (
-                                        f'{'='*42}\nStatus update successfuly.'
+                                        f'{'='*42}\n'
+                                        'Status update successfully.'
                                     )
                                 except sqlite3.Error as q:
                                     help_help = (
@@ -228,20 +276,24 @@ class task_red:
 
     #  main
     def view_and_redact(self, name_table: str,) -> None:
+        page = 1
         help_help = ""
         while True:
             start_bunner()
             print(f'<You in {name_table}>'.center(42, '='))
-            self.all_nothes_in_table(name_table)
+            real_num = self.all_nothes_in_table(name_table, page=page)
             if help_help:
                 print(help_help)
                 help_help = ""
-            # здесб сделать чтоб подстравиволось под название крч
             action = input(f'{'='*42}\nSelect action or (--help):\n->')
+            page, message, check = self.movie_task(action, page, len(real_num))
             if action.lower().strip() in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
+            if check:
+                help_help = f"{message}"
+                continue
             if action.lower().strip() in [
                 '--help', '-help', '--h', '-h'
             ]:
