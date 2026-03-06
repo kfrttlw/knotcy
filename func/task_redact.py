@@ -97,81 +97,106 @@ class task_red:
         while True:
             start_bunner()
             real_num = self.all_nothes_in_table(name_table, page=page)
-            if real_num:
-                if help_help:
-                    print(help_help)
-                    help_help = ""
-                num_table = input(
-                    f'{'='*42}\n'
-                    'Select a number for deleting or (!q).\n-> '
-                    )
-                if num_table in [
-                    '!quit', '!q', '!ex', '!exit'
-                ]:
-                    break
-                else:
-                    try:
-                        number_table = int(num_table)
-                        if 1 <= number_table <= len(real_num):
-                            id_task = real_num[number_table - 1][0]
-                            try:
-                                self.cur.execute(
-                                    f'''
-                                    DELETE FROM "{name_table}"
-                                    WHERE id = ?''',
-                                    (id_task,)
-                                    )
-                                self.connnn.commit()
-                            except sqlite3.Error as a:
-                                help_help = (
-                                    f'Error sqlite: {a}'
-                                )
-                        else:
-                            help_help = (
-                                f'Number - {number_table} '
-                                'not found in list.'
-                            )
-                    except ValueError as e:
-                        help_help = (
-                                    f'Error number: {e}'
-                                )
-
-    def redact_task(self, name_table: str) -> None:
-        help_help = ""
-        while True:
-            start_bunner()
-            real_num = self.all_nothes_in_table(name_table)
             if help_help:
                 print(help_help)
                 help_help = ""
-            user_input = input(f'{'='*42}\nSelect a number or (!q).\n->')
+            num_table = input(
+                f'{'='*42}\n'
+                'Select a number for deleting or (!q).\n-> '
+                )
+            page, text, check = self.movie_task(
+                num_table, page, len(real_num)
+            )
+            if num_table in [
+                '!quit', '!q', '!ex', '!exit'
+            ]:
+                break
+            if check:
+                help_help = f'{text}'
+                continue
+            else:
+                try:
+                    number_table = int(num_table)
+                    if 1 <= number_table <= len(real_num):
+                        id_db, name, status = real_num[number_table - 1]
+                        # Доделать вывод удаленного
+                        try:
+                            self.cur.execute(
+                                f'''
+                                DELETE FROM "{name_table}"
+                                WHERE id = ?''',
+                                (id_db,)
+                                )
+                            self.connnn.commit()
+                        except sqlite3.Error as a:
+                            help_help = (
+                                f'Error sqlite: {a}'
+                            )
+                    else:
+                        help_help = (
+                            f'Number - {number_table} '
+                            'not found in list.'
+                        )
+                except ValueError as e:
+                    help_help = (
+                                f'Error number: {e}'
+                            )
+
+    def redact_task(self, name_table: str) -> None:
+        page = 1
+        help_help = ""
+        while True:
+            start_bunner()
+            real_num = self.all_nothes_in_table(name_table, page=page)
+            if help_help:
+                print(help_help)
+                help_help = ""
+            slash = f'{'='*42}'
+            view = '>You in redact function<'.center(42, '=')
+            user_input = input(
+                f'{slash}\n{view}\n'
+                f'{slash}\nSelect a number or (!q).\n{slash}\n->')
+            page, message, check = self.movie_task(
+                user_input, page, len(real_num)
+                )
             if user_input.lower().strip() in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
+            if check:
+                help_help = f'{message}'
+                continue
             else:
                 try:
                     num_table = int(user_input)
                     if 1 <= num_table <= len(real_num):
-                        id_task = real_num[num_table - 1][0]
+                        db_id, name, status = real_num[num_table - 1]
+                        start_bunner()
+                        print(
+                            f'You redacted - {name} {status}'.center(42, '=')
+                            )
                         new_task = input(
-                            f'{'='*42}\nInput new task or (!q).\n-> '
+                            f'{slash}\nInput new task or (!q).\n{slash}\n-> '
                         ).strip()
                         if new_task in [
                             '!q', '!quit', '!ex', '!exit'
                         ]:
-                            break
+                            continue
                         else:
                             try:
                                 self.cur.execute(
                                     f'''
                                     UPDATE "{name_table}"
                                     SET name = ?
-                                    WHERE id =?''',
-                                    (new_task, id_task))
+                                    WHERE id = ?''',
+                                    (new_task, db_id))
                                 self.connnn.commit()
+                                task_done_redact = (
+                                    'Task update successfully.'.center(42, '=')
+                                    )
                                 help_help = (
-                                    'Task update successfully.'
+                                    f'{slash}\n'
+                                    f'{task_done_redact}'
                                 )
                             except sqlite3.Error as e:
                                 help_help = (

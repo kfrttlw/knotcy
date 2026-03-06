@@ -29,10 +29,12 @@ def start_main():
         if help_h:
             print(help_h)
             help_h = ""
+        help_text = '(--help)'.center(42, '=')
+        action_text = 'Select an action or folder:'.center(42, '=')
         user_action = input(
             f'{'='*42}\n'
-            'Welcome, select an action or folder'
-            f'(--help):\n{'='*42}\n-> '  # мейби убрать =
+            f'{action_text} '
+            f'\n{help_text}\n-> '  # мейби убрать =
             )
 
         if user_action.lower().strip() in [
@@ -60,7 +62,7 @@ def start_main():
             '--help', '-help', '--h', '-h'
         ]:
             help_h = (
-                f'{'='*42}\n{FOLDER_HELP}\n{'='*42}'
+                f'{'='*42}\n{FOLDER_HELP}'
             )
             continue
 
