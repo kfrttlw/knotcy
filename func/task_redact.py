@@ -128,6 +128,10 @@ class task_red:
                                 (id_db,)
                                 )
                             self.connnn.commit()
+                            help_help = (
+                                f'{'='*42}\nSuccessfully deleted Task:'
+                                f'\n{number_table}: {name} {status}.'
+                            )
                         except sqlite3.Error as a:
                             help_help = (
                                 f'Error sqlite: {a}'

@@ -2,6 +2,7 @@
 
 import sqlite3
 from .banner import start_bunner
+import math
 
 
 class folder_red:
@@ -17,25 +18,59 @@ class folder_red:
                          (tab_nam,))
         return self.cur.fetchone() is not None
 
-    def view_folder(self) -> list[str]:  # показ всех таблиц
+    def view_folder(self,
+                    page: int = 1,
+                    lim_page: int = 5) -> list[str]:  # показ всех таблиц
         try:
             self.cur.execute("""
                              SELECT name
                              FROM sqlite_master
                              WHERE type='table' AND NAME NOT LIKE 'sqlite_%';
                              """)
-            all_tables = [tab[0] for tab in self.cur.fetchall()]
-            if all_tables:
-                print('<all_tables>'.center(42, '='))
-                for w, table_all_name in enumerate(all_tables, 1):
-                    print(f'[{w}] -> {table_all_name}')
-                return all_tables
-            else:
-                print(f'{'='*42}\nYou dont have any folders with task.')
+            all_tables = self.cur.fetchall()
+            if not all_tables:
+                print('Not folder.')
                 return []
+            total_folder = len(all_tables)
+            total_page = math.ceil(total_folder / lim_page)
+            start_num = (page - 1) * lim_page
+            end_num = start_num + lim_page
+            lim_id = all_tables[start_num:end_num]
+
+            print('>all_tables<'.center(42, '='))
+            print(f'{page}/{total_page}'.center(42, '='))
+            for number, table_all_name in enumerate(
+                lim_id, start=start_num + 1
+            ):
+                print(f'[{number}] -> {table_all_name[0]}')
+            text_center = (
+                '!n - next page || !p - prev page'.center(42, '='))
+            print(f'{'='*42}\n'
+                  f'{text_center}')
+            return all_tables
         except sqlite3.Error as a:
             print(f'Error when viewing folders task: {a}')
             return []
+
+    def list_folder(self,
+                    user_input,
+                    page,
+                    total_items,
+                    limit_table: int = 5
+                    ) -> tuple[int, str, bool]:
+        if user_input in [
+            '!n', '!next'
+        ]:
+            if page * limit_table < total_items:
+                return page + 1, "", True
+            return page, "No more pages.", True
+        if user_input in [
+            '!p', '!prev', '!l', '!last'
+        ]:
+            if page > 1:
+                return page - 1, "", True
+            return page, "You are on the first page".center(42, "="), True
+        return page, "", False
 
     def add_new_table_folder(self, name: str) -> None:
         clean_name = ''.join(e for e in name if e.isalnum() or e == '_')
