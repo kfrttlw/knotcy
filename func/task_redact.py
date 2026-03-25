@@ -22,7 +22,7 @@ class task_red:
                             FROM "{name_table}"''')
             alls = self.cur.fetchall()
             if not alls:
-                print('Список пуст.')
+                print('The list is empty.')
                 return []
             total_task = len(alls)
             total_page = math.ceil(total_task / lim_page)
@@ -119,7 +119,6 @@ class task_red:
                     number_table = int(num_table)
                     if 1 <= number_table <= len(real_num):
                         id_db, name, status = real_num[number_table - 1]
-                        # Доделать вывод удаленного
                         try:
                             self.cur.execute(
                                 f'''

@@ -19,23 +19,26 @@ folder = folder_red(connnn)
 
 
 def start_main():
+    page = 1
     help_h = ""
     while True:
         start_bunner()
         now = datetime.now()
         x = "-" * 16
         print(f"{x}{now.strftime('%d.%m.%Y')}{x}")
-        tables = folder.view_folder()
+        tables = folder.view_folder(page=page)
         if help_h:
             print(help_h)
             help_h = ""
-        help_text = '(--help)'.center(42, '=')
         action_text = 'Select an action or folder:'.center(42, '=')
+        help_text = '(--help)'.center(42, '=')
         user_action = input(
-            f'{'='*42}\n'
             f'{action_text} '
-            f'\n{help_text}\n-> '  # мейби убрать =
-            )
+            f'\n{help_text}\n-> ')
+
+        page, messages, status = folder.list_folder(
+            user_action, page, len(tables)
+        )
 
         if user_action.lower().strip() in [
             '!quit', '!q', '!ex', '!exit'
@@ -48,21 +51,30 @@ def start_main():
         if user_action.isdigit():
             indx = int(user_action) - 1
             if 0 <= indx < len(tables):
-                user_action = tables[indx]
+                user_action = tables[indx][0]
             else:
-                input(
-                    'unknown num, press any button for back...'
+                text = 'Error: You wrote unknown num.'.center(42, '=')
+                help_h = (
+                    f'{text}'
+                    f'\n{'='*42}'
                     )
                 continue
         if folder.proverka_un_name(user_action):
             start_bunner()
             task.view_and_redact(user_action)
 
+        if status:
+            if messages:
+                help_h = (
+                    f'{messages}'
+                    f'\n{'='*42}')
+            continue
+
         elif user_action.lower().strip() in [
             '--help', '-help', '--h', '-h'
         ]:
             help_h = (
-                f'{'='*42}\n{FOLDER_HELP}'
+                f'{FOLDER_HELP}\n{'='*42}'
             )
             continue
 
@@ -74,8 +86,12 @@ def start_main():
         elif user_action.lower().strip() in [
             '!a', '!add', '!create', '!cr'
         ]:
+            help_add = ''
             while True:
                 start_bunner()
+                if help_add:
+                    print(help_add)
+                    help_add = ''
                 names = input(
                     f'Enter name task folder or !q.'
                     f'\n{'='*42}\n-> '
@@ -84,43 +100,74 @@ def start_main():
                     '!q', '!quit', '!ex', '!exit'
                 ]:
                     break
+                if len(names) > 34:
+                    text = (
+                        f'You wrote - {len(names)} symbols, '
+                        f'max - 34'.center(42, '='))
+                    help_add = (
+                        f'{text}\n{'='*42}'
+                    )
+                    continue
                 else:
-                    folder.add_new_table_folder(names)
+                    messages = folder.add_new_table_folder(names)
+                    help_add = f'{messages}'
+                    continue
 
         elif user_action.lower().strip() in [
             '!d', '!del', '!delete'
         ]:
+            page = 1
+            help_h = ''
             while True:
                 start_bunner()
-                tables = folder.view_folder()
-
+                tables = folder.view_folder(page=page)
+                if help_h:
+                    print(help_h)
+                    help_h = ''
                 name_del = input(
                     'pls enter a folder for del, '
-                    '!q to cancel.\n-> '
+                    f'!q to cancel.\n{'='*42}\n-> '
                     )
+                page, messages, check = folder.list_folder(
+                    name_del, page, len(tables)
+                )
                 if name_del in ['!q', '!quit', '!ex', '!exit']:
-                    print('back to menu...')
-                    time.sleep(1)
                     break
+                if check:
+                    if messages:
+                        help_h = (
+                            f'{messages}'
+                            f'\n{'='*42}')
+                    continue
                 if name_del.isdigit():
                     indx = int(name_del) - 1
                     if 0 <= indx < len(tables):
-                        name_del = tables[indx]
+                        name_del = tables[indx][0]
                     else:
-                        input(
-                            'unknown num, press any button for back...'
+                        text = 'Error: Unknown number.'.center(42, '=')
+                        help_h = (
+                            f'{text}'
+                            f'\n{'='*42}'
                             )
                         continue
                 if folder.proverka_un_name(name_del):
-                    folder.del_folder_full(name_del)
+                    messages = folder.del_folder_full(name_del)
+                    help_h = (
+                        f'{messages}'
+                        f'\n{'='*42}')
+                    continue
                 else:
-                    input('unknown name, press any button for back...')
+                    text = 'Error: Unknown name.'.center(42, '=')
+                    help_h = (
+                        f'{text}'
+                        f'\n{'='*42}')
         # здесб будет просмотр содержимого туда же и редакт перенести
 
         else:
+            text = 'Error: command not found'.center(42, '=')
             help_h = (
-                f'{'='*42}\nCommand not found,'
-                f'Please return your request.\n{'='*42}'
+                f'{text}'
+                f'\n{'='*42}'
             )
 
 
