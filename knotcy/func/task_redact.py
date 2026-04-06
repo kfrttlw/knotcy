@@ -39,7 +39,7 @@ class task_red:
                 print(f'{'='*42}\n'
                       f'{text_center}')
             return alls
-            # доработать чтоб было сверху
+
         except sqlite3.Error as w:
             print(f'Error reading table - {name_table}:\n{w}')
             return []
@@ -66,13 +66,13 @@ class task_red:
         return page, "", False
 
     def create_task(self, name_table: str) -> None:
-        entry = ""
+        entry = ''
         while True:
             start_bunner()
+            print(f'< You in {name_table}>'.center(42, '='))
             if entry:
                 print(entry)
-                entry = ""
-            print(f'< You in {name_table}>'.center(42, '='))
+                entry = ''
             new_task = input(
                 f'{'='*42}\nEnter your task or (!q)\n{'='*42}\n-> '
                 )
@@ -80,15 +80,25 @@ class task_red:
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
+            if len(new_task) > 34:
+                text = (
+                    f'Error: You entered - '
+                    f'{len(new_task)} symbols,'
+                    ' max - 34')
+                entry = f'{'='*42}\n{text}'
+                continue
             else:
                 self.cur.execute(
-                    f"INSERT INTO {name_table} (name) VALUES (?)",
+                    f'INSERT INTO "{name_table}" (name) VALUES (?)',
                     (new_task,)
                 )
                 self.connnn.commit()
-                entry = (
+                text_created = (
                     '< Created successfully. >'
                     .center(42, '=')
+                )
+                entry = (
+                    f'{'='*42}\n{text_created}'
                 )
 
     def deleting_task(self, name_table: str) -> None:
@@ -102,7 +112,7 @@ class task_red:
                 help_help = ""
             num_table = input(
                 f'{'='*42}\n'
-                'Select a number for deleting or (!q).\n-> '
+                f'Select a number for deleting or (!q).\n{'='*42}\n-> '
                 )
             page, text, check = self.movie_task(
                 num_table, page, len(real_num)
@@ -137,23 +147,23 @@ class task_red:
                             )
                     else:
                         help_help = (
-                            f'Number - {number_table} '
+                            f'{'='*42}\nNumber - {number_table} '
                             'not found in list.'
                         )
-                except ValueError as e:
+                except ValueError:
                     help_help = (
-                                f'Error number: {e}'
+                                f'{'='*42}\nError: Enter a valid number.'
                             )
 
     def redact_task(self, name_table: str) -> None:
         page = 1
-        help_help = ""
+        help_help = ''
         while True:
             start_bunner()
             real_num = self.all_nothes_in_table(name_table, page=page)
             if help_help:
                 print(help_help)
-                help_help = ""
+                help_help = ''
             slash = f'{'='*42}'
             view = '>You in redact function<'.center(42, '=')
             user_input = input(
@@ -167,7 +177,11 @@ class task_red:
             ]:
                 break
             if check:
-                help_help = f'{message}'
+                if message:
+                    help_help = f'{'='*42}\n{message}'
+                continue
+            if not user_input:
+                help_help = f'{'='*42}\nError: Empty string entered.'
                 continue
             else:
                 try:
@@ -179,12 +193,23 @@ class task_red:
                             f'You redacted - {name} {status}'.center(42, '=')
                             )
                         new_task = input(
-                            f'{slash}\nInput new task or (!q).\n{slash}\n-> '
+                            f'{slash}\nInput new name task or (!q).'
+                            f'\n{slash}\n-> '
                         ).strip()
                         if new_task in [
                             '!q', '!quit', '!ex', '!exit'
                         ]:
                             continue
+                        if not new_task:
+                            help_help = (
+                                f'{'='*42}\nError: You entered Empty string.')
+                            continue
+                        if len(new_task) > 34:
+                            text_lenght = (
+                                f'Error: You entered - '
+                                f'{len(new_task)} symbols,'
+                                ' max - 34')
+                            help_help = f'{'='*42}\n{text_lenght}'
                         else:
                             try:
                                 self.cur.execute(
@@ -207,25 +232,24 @@ class task_red:
                                 )
                     else:
                         help_help = (
-                            f'Number - {num_table}, not on the list.'
+                            f'{'='*42}\nNumber - {num_table}, not on the list.'
                         )
-                except ValueError as a:
+                except ValueError:
                     help_help = (
-                        f'Error value: {a}'
+                        f'{'='*42}\nError: Enter a valid number.'
                     )
 
     def complete_task(self, name_table: str) -> None:
-        # мейби сделать ретурн для вывода прогресса
         page = 1
-        help_help = ""
+        help_help = ''
         while True:
             start_bunner()
             real_num = self.all_nothes_in_table(name_table, page=page)
             if help_help:
                 print(help_help)
-                help_help = ""
+                help_help = ''
             input_user = input(
-                f'{'='*42}\nSelect a number in task for complete or (!q)'
+                f'{'='*42}\nSelect a number in task\nfor complete, or (!q).'
                 f'\n{'='*42}.\n-> '
                 )
             page, message, check = self.movie_task(
@@ -236,91 +260,65 @@ class task_red:
             ]:
                 break
             if check:
-                help_help = f"{message}"
+                if message:
+                    help_help = f'{'='*42}\n{message}'
                 continue
             else:
                 try:
-                    num_table: int = int(input_user)
+                    num_table = int(input_user)
                     if 1 <= num_table <= len(real_num):
                         db_id, name, status = real_num[num_table - 1]
-                        while True:
-                            start_bunner()
-                            if help_help:
-                                print(help_help)
-                                help_help = ""
-                            print(
-                                f'{'='*42}\n{db_id}: {name} {status}.'
-                                f'\n{'='*42}'
-                                )
-                            center_title = (
-                                f'< You redacted task - {db_id}. >'
-                                .center(42, '=')
-                                )
-                            check_status = input(
-                                f'{center_title}\n{'='*42}'
-                                '\nPress any button to switch '
-                                f'status or (!q).\n{'='*42}\n-> '
-                            )
-                            if check_status in [
-                                '!q', '!quit', '!ex', '!exit'
-                            ]:
-                                break
-                            else:
-                                try:
-                                    self.cur.execute(f'''
-                                                     SELECT status
-                                                     FROM "{name_table}"
-                                                     WHERE id = ?''',
-                                                     (db_id,))
-                                    current_status = self.cur.fetchone()[0]
-                                    new_status = (
-                                        '[X]' if current_status == '[ ]'
-                                        else '[ ]'
-                                    )
-                                    self.cur.execute(f'''
-                                                     UPDATE "{name_table}"
-                                                     SET status = ?
-                                                     WHERE id = ?''',
-                                                     (new_status, db_id))
-                                    self.connnn.commit()
-                                    status = new_status
-                                    help_help = (
-                                        f'{'='*42}\n'
-                                        'Status update successfully.'
-                                    )
-                                except sqlite3.Error as q:
-                                    help_help = (
-                                        f'Error sqlite3: {q}'
-                                    )
+                        self.cur.execute(f'''
+                                         SELECT status
+                                         FROM "{name_table}"
+                                         WHERE id = ?''',
+                                         (db_id,))
+                        current_status = self.cur.fetchone()[0]
+                        new_status = (
+                            '[X]' if current_status == '[ ]'
+                            else '[ ]'
+                        )
+                        self.cur.execute(f'''
+                                         UPDATE "{name_table}"
+                                         SET status = ?
+                                         WHERE id = ?''',
+                                         (new_status, db_id))
+                        self.connnn.commit()
+                        help_help = (
+                            f'{'='*42}\n'
+                            'Status - update successfully.'
+                        )
                     else:
                         help_help = (
                             f'{'='*42}\nNumber - {num_table}, not on the list.'
                         )
 
-                except ValueError as q:
+                except ValueError:
                     help_help = (
-                        f'\n{'='*42}Error value: {q} .'
+                        f'{'='*42}\nError: Enter a valid number.'
                     )
 
     #  main
     def view_and_redact(self, name_table: str,) -> None:
         page = 1
-        help_help = ""
+        help_help = ''
         while True:
             start_bunner()
             print(f'<You in {name_table}>'.center(42, '='))
             real_num = self.all_nothes_in_table(name_table, page=page)
             if help_help:
                 print(help_help)
-                help_help = ""
-            action = input(f'{'='*42}\nSelect action or (--help):\n->')
+                help_help = ''
+            action = input(f'{'='*42}\nSelect number or (--help):'
+                           f'\n{'='*42}\n->')
             page, message, check = self.movie_task(action, page, len(real_num))
             if action.lower().strip() in [
                 '!q', '!quit', '!ex', '!exit'
             ]:
                 break
             if check:
-                help_help = f"{message}"
+                if message:
+                    help_help = f'{'='*42}\n{message}'
                 continue
             if action.lower().strip() in [
                 '--help', '-help', '--h', '-h'

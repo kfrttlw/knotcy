@@ -11,10 +11,10 @@ class folder_red:
         self.cur = self.connnn.cursor()
 
     def proverka_un_name(self, tab_nam: str) -> bool:
-        self.cur.execute("""
+        self.cur.execute('''
                          SELECT name
                          FROM sqlite_master
-                         WHERE type='table' AND name=?""",
+                         WHERE type="table" AND name=?''',
                          (tab_nam,))
         return self.cur.fetchone() is not None
 
@@ -22,11 +22,11 @@ class folder_red:
                     page: int = 1,
                     lim_page: int = 5) -> list[str]:  # показ всех таблиц
         try:
-            self.cur.execute("""
+            self.cur.execute('''
                              SELECT name
                              FROM sqlite_master
-                             WHERE type='table' AND NAME NOT LIKE 'sqlite_%';
-                             """)
+                             WHERE type="table" AND NAME NOT LIKE "sqlite_%";
+                             ''')
             all_tables = self.cur.fetchall()
             if not all_tables:
                 print(
@@ -91,7 +91,7 @@ class folder_red:
             CREATE TABLE IF NOT EXISTS "{clean_name}"(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                status NOT NULL DEFAULT '[ ]'
+                status NOT NULL DEFAULT "[ ]"
             );
             ''')
                 self.connnn.commit()
@@ -133,7 +133,9 @@ class folder_red:
             action_folder = input(
                 f'Please select an number'
                 '\nor name a folder, '
-                f'or (!quit):\n{'='*42}\n->'
+                f'or (!quit):\n{'='*42}'
+                f'\n>Index validation takes priority<\n{'='*42}'
+                '\n->'
             )
             page, message, status = self.list_folder(
                 action_folder, page, len(tables)
@@ -149,7 +151,7 @@ class folder_red:
             if not action_folder:
                 help_help = f'Error: Empty string entered.\n{'='*42}'
                 continue
-            #
+
             if action_folder.isdigit():
                 indx = int(action_folder) - 1
                 if 0 <= indx < len(tables):
@@ -172,7 +174,8 @@ class folder_red:
                     continue
                 if len(new_name_redacted) > 34:
                     text = (
-                        f'Error: You wrote - {len(new_name_redacted)} symbols,'
+                        f'Error: You entered - '
+                        f'{len(new_name_redacted)} symbols,'
                         f' max - 34'.center(42, '='))
                     help_help = f'{text}\n{'='*42}'
                     continue
@@ -183,10 +186,10 @@ class folder_red:
                     if new_name_redacted:
                         clean_name = ''.join(e for e in new_name_redacted
                                              if e.isalnum() or e == '_')
-                        self.cur.execute("""
+                        self.cur.execute('''
                                          SELECT name
                                          FROM sqlite_master
-                                         WHERE type='table' AND name=?""",
+                                         WHERE type="table" AND name=?''',
                                          (clean_name,))
                         if self.cur.fetchone():
                             help_help = (

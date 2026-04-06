@@ -2,15 +2,18 @@
 
 import sqlite3
 import time
-from func import start_bunner
-from func import clear_all
+import os
+from .func import start_bunner
+from .func import clear_all
 from datetime import datetime
-from func import task_red
-from func import folder_red
-from func import FOLDER_HELP
+from .func import task_red
+from .func import folder_red
+from .func import FOLDER_HELP, INFO
+from .func import delete_db
 # ---------forcomfy------------------------------1
 slash = '=' * 20 + '<>' + '=' * 20
-connnn = sqlite3.connect('knotcy_base.sqlite')
+db_path = os.path.expanduser("~/.knotcy_db.db")
+connnn = sqlite3.connect(db_path)
 cur = connnn.cursor()
 # подключения class
 task = task_red(connnn)
@@ -20,20 +23,20 @@ folder = folder_red(connnn)
 
 def start_main():
     page = 1
-    help_h = ""
+    help_h = ''
     while True:
         start_bunner()
         now = datetime.now()
-        x = "-" * 16
-        print(f"{x}{now.strftime('%d.%m.%Y')}{x}")
+        x = '-' * 16
+        print(f'{x}{now.strftime('%d.%m.%Y')}{x}')
         tables = folder.view_folder(page=page)
         if help_h:
             print(help_h)
-            help_h = ""
+            help_h = ''
         action_text = 'Select an action or folder:'.center(42, '=')
         help_text = '(--help)'.center(42, '=')
         user_action = input(
-            f'{action_text} '
+            f'{action_text}'
             f'\n{help_text}\n-> ')
 
         page, messages, status = folder.list_folder(
@@ -53,15 +56,15 @@ def start_main():
             if 0 <= indx < len(tables):
                 user_action = tables[indx][0]
             else:
-                text = 'Error: You wrote unknown num.'.center(42, '=')
+                text = 'Error: You entered unknown num.'.center(42, '=')
                 help_h = (
                     f'{text}'
                     f'\n{'='*42}'
                     )
                 continue
         if folder.proverka_un_name(user_action):
-            start_bunner()
             task.view_and_redact(user_action)
+            continue
 
         if status:
             if messages:
@@ -77,6 +80,26 @@ def start_main():
                 f'{FOLDER_HELP}\n{'='*42}'
             )
             continue
+        elif user_action.lower().strip() in [
+            '!info', '!inf'
+        ]:
+            help_h = (
+                f'{INFO}\n{'='*42}'
+            )
+
+        elif user_action.lower().strip() in [
+            '!deldb', '!dbdel'
+        ]:
+            status, message = delete_db(connnn, db_path)
+            if status:
+                start_bunner()
+                print(
+                    f'{message}\n{'='*42}'
+                    )
+                break
+            else:
+                help_h = f'{message}\n{'='*42}'
+                continue
 
         elif user_action.lower().strip() in [
             '!r', '!re', '!redact'
@@ -102,7 +125,7 @@ def start_main():
                     break
                 if len(names) > 34:
                     text = (
-                        f'You wrote - {len(names)} symbols, '
+                        f'You entered - {len(names)} symbols, '
                         f'max - 34'.center(42, '='))
                     help_add = (
                         f'{text}\n{'='*42}'
@@ -125,8 +148,10 @@ def start_main():
                     print(help_h)
                     help_h = ''
                 name_del = input(
-                    'pls enter a folder for del, '
-                    f'!q to cancel.\n{'='*42}\n-> '
+                    'pls enter a folder for del,'
+                    '\nor !q to exit.\n'
+                    f'{'='*42}\n>Index validation takes priority<'
+                    f'\n{'='*42}\n-> '
                     )
                 page, messages, check = folder.list_folder(
                     name_del, page, len(tables)
@@ -161,7 +186,6 @@ def start_main():
                     help_h = (
                         f'{text}'
                         f'\n{'='*42}')
-        # здесб будет просмотр содержимого туда же и редакт перенести
 
         else:
             text = 'Error: command not found'.center(42, '=')

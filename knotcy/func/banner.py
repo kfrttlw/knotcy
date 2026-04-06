@@ -2,8 +2,6 @@
 
 import os
 
-# banner
-
 rise = r""" ____  __.              __
 |    |/ _| ____   _____/  |_  ____ ___.__.
 |      <  /    \ /  _ \   __\/ ___<   |  |
@@ -15,7 +13,6 @@ slash = '=' * 20 + '<>' + '=' * 20
 
 def clear_all() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
-    # для адапатации под разные ос
 
 
 def start_bunner() -> None:

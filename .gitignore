@@ -4,3 +4,5 @@ knotcy_base.sqlite
 note.py
 __pycache__/
 .env
+knotcy.egg-info
+build
