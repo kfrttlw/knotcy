@@ -11,6 +11,7 @@ Features:
 
 Download:
 Make sure you have --Python 3.9+-- and -Git- installed. Then run:
-bash: pip install git+https://github.com/kfrttlw/knotcy.
+bash: 
+- pip install git+https://github.com/kfrttlw/knotcy
 
 After installation, simply type the following command in your terminal from any directory: knotcy.
