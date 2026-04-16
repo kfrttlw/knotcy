@@ -13,8 +13,9 @@ FOLDER_HELP = '''--all command:
 !a, !add, !create, !cr -> create table.
 !d, !del, !delete -> delete a folder.
 !q, !quit, !ex, !exit -> for exit.
-!deldb, !dbdel -> delete knotcy.db.
 !info, !inf -> information to knotcy'''
 # ========================================
 INFO = '''>knotcy.db created as ~/.knotcy_db.db<
->Index validation takes priority<'''
+>Index validation takes priority<
+command:
+>!deldb, !dbdel -> delete knotcy.db.<'''

@@ -3,6 +3,7 @@
 import sqlite3
 import time
 import os
+import sys
 from .func import start_bunner
 from .func import clear_all
 from datetime import datetime
@@ -90,16 +91,39 @@ def start_main():
         elif user_action.lower().strip() in [
             '!deldb', '!dbdel'
         ]:
-            status, message = delete_db(connnn, db_path)
-            if status:
+            help_hh = ''
+            while True:
                 start_bunner()
-                print(
-                    f'{message}\n{'='*42}'
-                    )
-                break
-            else:
-                help_h = f'{message}\n{'='*42}'
-                continue
+
+                if help_hh:
+                    print(help_hh)
+                    help_hh = ''
+
+                check = input(
+                    'Are you sure,\n'
+                    'you want to delete the database?'
+                    f'\n{'='*42}\n(!yes) (!no)\n{'='*42}\n->')
+
+                if check in [
+                    '!yes', '!y'
+                ]:
+                    status, message = delete_db(connnn, db_path)
+                    if status:
+                        start_bunner()
+                        print(
+                            f'{message}\n{'='*42}'
+                            )
+                        sys.exit()
+                    else:
+                        help_hh = f'{message}\n{'='*42}'
+                        continue
+                elif check in [
+                    '!no', '!n', '!q', '!quit'
+                ]:
+                    break
+                else:
+                    help_hh = f'Not found command\n{'='*42}'
+                    continue
 
         elif user_action.lower().strip() in [
             '!r', '!re', '!redact'
